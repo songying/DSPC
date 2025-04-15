@@ -1,35 +1,95 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
-function App() {
-  const [count, setCount] = useState(0)
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Marketplace from './pages/Marketplace';
+import MyDatasets from './pages/MyDatasets';
+import CreateDataset from './pages/CreateDataset';
+import DatasetDetail from './pages/DatasetDetail';
+import MyComputations from './pages/MyComputations';
+import ComputationDetail from './pages/ComputationDetail';
+import Analytics from './pages/Analytics';
 
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  }
+  
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+  
+  return <>{children}</>;
+};
+
+const App: React.FC = () => {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/marketplace" element={<Marketplace />} />
+          
+          {/* Protected routes */}
+          <Route 
+            path="/my-datasets" 
+            element={
+              <ProtectedRoute>
+                <MyDatasets />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/datasets/create" 
+            element={
+              <ProtectedRoute>
+                <CreateDataset />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/datasets/:id" 
+            element={
+              <ProtectedRoute>
+                <DatasetDetail />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/my-computations" 
+            element={
+              <ProtectedRoute>
+                <MyComputations />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/computations/:id" 
+            element={
+              <ProtectedRoute>
+                <ComputationDetail />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/analytics" 
+            element={
+              <ProtectedRoute>
+                <Analytics />
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
+  );
+};
 
-export default App
+export default App;
